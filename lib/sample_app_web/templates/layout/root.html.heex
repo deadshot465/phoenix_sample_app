@@ -14,11 +14,18 @@
       <section class="container">
         <nav>
           <ul>
-            <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
+            <%= if @current_user do %>
+              <li><strong>Hello, <%= @current_user.name %></strong></li>
+              <li><%= link "Log out", to: Routes.session_path(@conn, :delete), method: "delete" %></li>
+            <% else %>
+              <li><strong>Hello, guest</strong></li>
+              <li><%= link "Log in", to: Routes.session_path(@conn, :new) %></li>
+            <% end %>
             <li><%= link "Home", to: Routes.static_pages_path(@conn, :home) %></li>
             <li><%= link "Help", to: Routes.static_pages_path(@conn, :help) %></li>
             <li><%= link "About", to: Routes.static_pages_path(@conn, :about) %></li>
             <li><%= link "Contact", to: Routes.static_pages_path(@conn, :contact) %></li>
+            <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
             <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
               <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
             <% end %>
