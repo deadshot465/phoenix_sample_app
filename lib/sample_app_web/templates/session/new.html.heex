@@ -9,5 +9,9 @@
         <%= label f, :password %>
         <%= password_input f, :password, placeholder: "Password" %>
     </div>
+    <div>
+        <%= label f, :remember_me %>
+        <%= checkbox f, :remember_me %>
+    </div>
     <%= submit "Log in" %>
 <% end %>

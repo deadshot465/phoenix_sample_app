@@ -18,6 +18,7 @@ defmodule SampleAppWeb.UserController do
         |> SampleAppWeb.Auth.login(user)
         |> put_flash(:info, "#{user.name} created!")
         |> redirect(to: Routes.static_pages_path(conn, :home))
+
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end

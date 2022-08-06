@@ -10,6 +10,8 @@ defmodule SampleApp.Account.User do
     field :password, :string, virtual: true
     field :password_hash, :string
     field :password_confirmation, :string, virtual: true
+    field :remember_digest, :string
+    field :remember_me, :boolean, virtual: true
 
     timestamps()
   end
@@ -42,12 +44,28 @@ defmodule SampleApp.Account.User do
     |> put_password_hash()
   end
 
+  def remember_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:remember_me])
+    |> validate_required([:remember_me])
+    |> put_remember_digest()
+  end
+
   defp put_password_hash(changeset) do
     case changeset do
       %Ecto.Changeset{valid?: true, changes: %{password: password}} ->
         put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(password))
 
       _ -> changeset
+    end
+  end
+
+  defp put_remember_digest(changeset) do
+    case changeset do
+      %Ecto.Changeset{valid?: true, changes: %{remember_me: true}} ->
+        token = Pbkdf2.Base.gen_salt(format: :django, salt_len: 22)
+        {put_change(changeset, :remember_digest, token |> Pbkdf2.hash_pwd_salt()), token}
+      _ -> {changeset, ""}
     end
   end
 end
