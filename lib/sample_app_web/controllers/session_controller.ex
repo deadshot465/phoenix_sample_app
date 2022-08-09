@@ -7,7 +7,10 @@ defmodule SampleAppWeb.SessionController do
   end
 
   @spec create(Plug.Conn.t(), map) :: Plug.Conn.t()
-  def create(conn, %{"session" => %{"email" => email, "password" => password, "remember_me" => remember_me} = attrs}) do
+  def create(conn, %{
+        "session" =>
+          %{"email" => email, "password" => password, "remember_me" => remember_me} = attrs
+      }) do
     case SampleApp.Account.authenticate(email, password) do
       {:ok, user} ->
         remember_me = String.to_atom(remember_me)
@@ -24,6 +27,7 @@ defmodule SampleAppWeb.SessionController do
             |> put_flash(:error, "Failed to remember user.")
             |> render("new.html")
         end
+
       {:error, _} ->
         conn
         |> put_flash(:error, "Invalid email/password combination.")

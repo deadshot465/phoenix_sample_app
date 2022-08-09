@@ -8,27 +8,35 @@ defmodule SampleAppWeb.Auth do
   def call(conn, _opts) do
     user_id = get_session(conn, :user_id)
 
-    if user_id != nil do
-      user = SampleApp.Account.find_user(user_id)
-      assign(conn, :current_user, user)
-    else
-      conn = fetch_cookies(conn, signed: ["user_id"], encrypted: ["remember_token"])
-      IO.inspect(conn.cookies)
+    cond do
+      user_id != nil ->
+        user = SampleApp.Account.find_user(user_id)
+        assign(conn, :current_user, user)
 
-      user = case Map.fetch(conn.cookies, "user_id") do
-        {:ok, user_id} -> case SampleApp.Account.authenticated?(user_id, conn.cookies["remember_token"]) do
-          {:ok, user} -> user
-          {:error, _} -> nil
-        end
+      !is_nil(conn.assigns[:current_user]) ->
+        conn
 
-        _ -> nil
-      end
+      true ->
+        conn = fetch_cookies(conn, signed: ["user_id"], encrypted: ["remember_token"])
 
-      assign(conn, :current_user, user)
+        user =
+          case Map.fetch(conn.cookies, "user_id") do
+            {:ok, user_id} ->
+              case SampleApp.Account.authenticated?(user_id, conn.cookies["remember_token"]) do
+                {:ok, user} -> user
+                {:error, _} -> nil
+              end
+
+            _ ->
+              nil
+          end
+
+        assign(conn, :current_user, user)
     end
   end
 
-  @spec login(Plug.Conn.t(), atom | %{:id => any, optional(any) => any}, boolean(), String.t()) :: Plug.Conn.t()
+  @spec login(Plug.Conn.t(), atom | %{:id => any, optional(any) => any}, boolean(), String.t()) ::
+          Plug.Conn.t()
   def login(conn, user, remember_me \\ false, token \\ "") do
     conn
     |> assign(:current_user, user)
@@ -36,7 +44,7 @@ defmodule SampleAppWeb.Auth do
     |> configure_session(renew: true)
     |> then(fn c ->
       if remember_me do
-        max_age = div(:timer.hours(175200), 1000)
+        max_age = div(:timer.hours(175_200), 1000)
 
         c
         |> put_resp_cookie("user_id", user.id, sign: true, max_age: max_age)

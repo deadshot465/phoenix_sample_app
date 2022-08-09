@@ -54,8 +54,12 @@ defmodule SampleApp.Account do
     user = find_user(user_id)
 
     cond do
-      user && Pbkdf2.verify_pass(remember_token, user.remember_digest) -> {:ok, user}
-      user -> {:error, :unauthorized}
+      user && Pbkdf2.verify_pass(remember_token, user.remember_digest) ->
+        {:ok, user}
+
+      user ->
+        {:error, :unauthorized}
+
       true ->
         Pbkdf2.no_user_verify()
         {:error, :not_found}

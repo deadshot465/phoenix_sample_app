@@ -23,6 +23,7 @@ defmodule SampleApp.Account.User do
     |> validate_length(:name, min: 3, max: 50)
     |> validate_length(:email, min: 10, max: 255)
     |> validate_format(:email, @email_regex)
+    |> unique_constraint(:email)
   end
 
   @spec registration_changeset(
@@ -56,7 +57,8 @@ defmodule SampleApp.Account.User do
       %Ecto.Changeset{valid?: true, changes: %{password: password}} ->
         put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(password))
 
-      _ -> changeset
+      _ ->
+        changeset
     end
   end
 
@@ -65,7 +67,9 @@ defmodule SampleApp.Account.User do
       %Ecto.Changeset{valid?: true, changes: %{remember_me: true}} ->
         token = Pbkdf2.Base.gen_salt(format: :django, salt_len: 22)
         {put_change(changeset, :remember_digest, token |> Pbkdf2.hash_pwd_salt()), token}
-      _ -> {changeset, ""}
+
+      _ ->
+        {changeset, ""}
     end
   end
 end
